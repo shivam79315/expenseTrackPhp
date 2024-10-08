@@ -1,0 +1,206 @@
+General Styling
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 400px;
+}
+
+/* Headings */
+.mainHeading {
+    text-align: center;
+    font-size: 2em;
+    color: beige;
+    margin-bottom: 20px;
+    background-image: url(backgroundImage.png);
+}
+
+.sectionHeading {
+    font-size: 1.5em;
+    color: #333;
+    margin-top: 40px;
+    margin-bottom: 10px;
+}
+
+/* Form Styling */
+.transactionForm {
+    text-align: center;
+    margin-bottom: 30px;
+    background-image: url(formBackground.png);
+    background-size: cover;
+    padding: 20px 0px;
+}
+
+.inputField, .inputSelect {
+    width: 80%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+}
+
+.btnPrimary {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.btnPrimary:hover {
+    background-color: #45a049;
+}
+
+/* Hide the checkbox */
+.edit-checkbox {
+    display: none;
+}
+
+/* Style the edit button to make it look like a clickable button */
+.edit-button {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin: 5px 0;
+    text-align: center;
+    user-select: none; /* Prevents text selection on click */
+}
+
+/* Default state when edit fields are hidden */
+.inputEdit,
+.inputSelectEdit,
+.btnSecondary {
+    display: none;
+}
+
+/* When the checkbox is checked, show the edit fields */
+.edit-checkbox:checked ~ .editForm .inputEdit,
+.edit-checkbox:checked ~ .editForm .inputSelectEdit,
+.edit-checkbox:checked ~ .editForm .btnSecondary {
+    display: inline-block;
+}
+
+
+
+/* Summary Box Styling */
+.summaryBox {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f8ff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.summaryText {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.totalAmount, .profitAmount, .lossAmount {
+    font-weight: bold;
+}
+
+/* Transaction Table */
+.transactionTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tableRow {
+    height:120px;
+}
+
+.transactionTable th, .transactionTable td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: relative;
+}
+
+/* Edit/Delete Form */
+.inputEdit, .inputSelectEdit {
+    width: 80px;
+    padding: 5px;
+    margin-right: 10px;
+}
+
+.editForm, .deleteForm {
+    display: inline;
+}
+
+.editForm {
+    display: flex;
+    gap: 5px;
+    position: absolute;
+    top: 60px;
+    left:33px;
+    flex-direction: column;
+}
+
+.btnSecondary {
+    background-color: #008cba;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btnSecondary:hover {
+    background-color: #007bb5;
+}
+
+.btnDanger {
+    background-color: #f44336;
+    color: white;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left:10px;
+}
+
+.btnDanger:hover {
+    background-color: #da190b;
+}
+
+/* Reset Button */
+.btnReset {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #ff9800;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btnReset:hover {
+    background-color: #e68a00;
+}
