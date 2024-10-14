@@ -1,69 +1,49 @@
 <?php
-
 session_start();
+include('../config/config.php');
 
-if(!isset($_SESSION['transactions'])){
-    $_SESSION['transactions']=[];
-}
-
-$name = '';
-$amount = 0;
-$type = '';
 $totalAmount = 0;
 $profit = 0;
 $loss = 0;
 
+// Handle Add Transaction
+include('../views/insertDbData.php');
 
-// Example form handling code to add a new transaction (for reference)
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['addTransaction'])) {
-    $name = $_POST['expenseName'];
-    $amount = $_POST['expenseAmount'];
-    $type = $_POST['expenseType'];
+// Handle Update Transaction
+include('../views/update.php');
 
-    $_SESSION['transactions'][] = [
-        'expenseName' => $name,
-        'expenseAmount' => $amount,
-        'expenseType' => $type
-    ];
-}
-
-
-foreach($_SESSION['transactions'] as $transaction){
-    if($transaction['expenseType']== 'expense'){
-        $totalAmount -= $transaction['expenseAmount'];
-        $loss += $transaction['expenseAmount'];
-    }
-    else 
-    {
-        $totalAmount += $transaction['expenseAmount'];
-        $profit += $transaction['expenseAmount'];
-    }
-}
-
-if(isset($_POST['resetTransactions'])){
-    $_SESSION['transactions'] = [];
-}
-
-if(isset($_POST['editTransaction'])){
-    $index = $_POST['index'];
-    $newName = $_POST['newName'];
-    $newAmount = $_POST['newAmount'];
-    $newType = $_POST['newType'];
-
-    $_SESSION['transactions'][$index] = [
-        'expenseName' => $newName,
-        'expenseAmount' => $newAmount,
-        'expenseType' => $newType
-    ];
-}
-
-// Handle transaction delete
+// Handle Delete Transaction
 if (isset($_POST['deleteTransaction'])) {
-    $index = $_POST['index'];
-    unset($_SESSION['transactions'][$index]);
-    $_SESSION['transactions'] = array_values($_SESSION['transactions']); 
+    $id = $_POST['id'];
+
+    if (!empty($id)) {
+        $stmt = $conn->prepare("DELETE FROM expenselist WHERE Id = :id");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
 }
 
+// Fetch expenses from the database
+$fetchExpenses = $conn->prepare("SELECT * FROM expenselist");
+$fetchExpenses->execute();
+$expenses = $fetchExpenses->fetchAll(PDO::FETCH_ASSOC);
+
+// Calculate totals
+$totalAmount = 0;
+$profit = 0;
+$loss = 0;
+foreach ($expenses as $expense) {
+    $totalAmount += $expense['amount'];
+    if ($expense['type'] == 'credit') {
+        $profit += $expense['amount'];
+    } else {
+        $loss += $expense['amount'];
+    }
+}
+
+if (isset($_POST['resetTransactions'])) {
+    $expenses = [];
+}
 ?>
 
 <!DOCTYPE html>
@@ -76,90 +56,109 @@ if (isset($_POST['deleteTransaction'])) {
 </head>
 <body>
 
-<div class="container">
-    <h1 class="mainHeading">Expense Tracker</h1>
+    <div class="container">
+        <h1 class="mainHeading">Expense Tracker</h1>
 
-    <!-- Add Transaction Form -->
-    <form action="" method="post" class="transactionForm">
-        <input type="text" name="expenseName" class="inputField" placeholder="Enter your Expense Name here: " />
-        <br><br>
-        <input type="number" name="expenseAmount" class="inputField" placeholder="Enter amount here: " />
-        <br><br>
-        <select name="expenseType" class="inputSelect" required>
-            <option value="">Select option here</option>
-            <option value="expense">Expense</option>
-            <option value="credit">Credit</option>
-        </select>
-        <br><br>
-        <button name="addTransaction" type="submit" class="btnPrimary">Add Transaction</button>
-    </form>
+        <!-- Add Transaction Form -->
+        <form action="" method="post" class="transactionForm">
+            <input type="text" name="expenseName" class="inputField" placeholder="Enter your Expense Name here: " required />
+            <br><br>
+            <input type="number" name="expenseAmount" class="inputField" placeholder="Enter amount here: " required />
+            <br><br>
+            <select name="expenseType" class="inputSelect" required>
+                <option value="">Select option here</option>
+                <option value="expense">Expense</option>
+                <option value="credit">Credit</option>
+            </select>
+            <br><br>
+            <button name="addTransaction" type="submit" class="btnPrimary">Add Transaction</button>
+        </form>
 
-    <!-- Total and Profit/Loss Display -->
-    <div class="summaryBox">
-        <?php
-            echo "<p class='summaryText'>Total amount: <span class='totalAmount'>".$totalAmount."</span></p>";
-            echo "<p class='summaryText'>Overall profit: <span class='profitAmount'>".$profit."</span></p>";
-            echo "<p class='summaryText'>Overall loss: <span class='lossAmount'>".$loss."</span></p>";
-        ?>
+        <!-- Total and Profit/Loss Display -->
+        <div class="summaryBox">
+            <?php
+            echo "<p class='summaryText'>Total amount: <span class='totalAmount'>" . $totalAmount . "</span></p>";
+            echo "<p class='summaryText'>Overall profit: <span class='profitAmount'>" . $profit . "</span></p>";
+            echo "<p class='summaryText'>Overall loss: <span class='lossAmount'>" . $loss . "</span></p>";
+            ?>
+        </div>
+
+        <!-- Transaction List -->
+        <h2 class="sectionHeading">Transaction List</h2>
+        <table class="transactionTable">
+            <thead>
+                <tr class="tableRow">
+                    <th>Expense Title</th>
+                    <th>Expense Amount</th>
+                    <th>Expense Type</th>
+                    <th colspan="2">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                if ($expenses) {
+                    foreach ($expenses as $expense) {
+                        echo '<tr class="tableRow">';
+                        echo '<td>' . htmlspecialchars($expense['name']) . '</td>';
+                        echo '<td>' . htmlspecialchars($expense['amount']) . '</td>';
+                        echo '<td>' . htmlspecialchars($expense['type']) . '</td>';
+                        echo '<td>
+                                <form action="" method="post" class="deleteForm">
+                                    <input type="hidden" name="id" value="' . htmlspecialchars($expense['Id']) . '">
+                                    <button name="deleteTransaction">Delete</button>
+                                </form>
+                            </td>';
+                        echo '<td>
+                                <form action="" method="post" class="updateForm">
+                                    <input type="hidden" name="id" value="' . htmlspecialchars($expense['Id']) . '">
+                                    <input type="text" name="expenseName" value="' . htmlspecialchars($expense['name']) . '" required>
+                                    <input type="number" name="expenseAmount" value="' . htmlspecialchars($expense['amount']) . '" required>
+                                    <select name="expenseType" required>
+                                        <option value="expense"' . ($expense['type'] === 'expense' ? ' selected' : '') . '>Expense</option>
+                                        <option value="credit"' . ($expense['type'] === 'credit' ? ' selected' : '') . '>Credit</option>
+                                    </select>
+                                    <button name="updateTransaction">Update</button>
+                                </form>
+                            </td>';
+                        echo '</tr>';
+                    }
+                } else {
+                    echo '<tr><td colspan="5">No transactions found.</td></tr>';
+                }
+                ?>
+            </tbody>
+        </table>
+
+        <!-- Reset Transactions Button -->
+        <form action="" method="post">
+            <button name="resetTransactions" type="submit" class="btnReset">Reset Transactions</button>
+        </form>
     </div>
 
-    <!-- Transaction List -->
-    <h2 class="sectionHeading">Transaction List</h2>
-    <table class="transactionTable">
-        <thead>
-            <tr class="tableRow">
-                <th>Expense Title</th>
-                <th>Expense Amount</th>
-                <th>Expense Type</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($_SESSION['transactions'])): ?>
-                <?php foreach($_SESSION['transactions'] as $index => $transaction): ?>
-                    <tr class="tableRow">
-                        <td><?php echo htmlspecialchars($transaction['expenseName']); ?></td>
-                        <td><?php echo ($transaction['expenseType'] === 'expense' ? '-' : '+') . htmlspecialchars($transaction['expenseAmount']); ?></td>
-                        <td><?php echo ucfirst(htmlspecialchars($transaction['expenseType'])); ?></td>
-                        <td class="actions">
-                            <!-- Toggle Checkbox for Edit Form -->
-                            <input type="checkbox" id="editToggle-<?php echo $index; ?>" class="edit-checkbox">
-                            <label for="editToggle-<?php echo $index; ?>" class="edit-button">Edit</label>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('.transactionForm');
+            const transactionTableBody = document.querySelector('.transactionTable tbody');
 
-                            <!-- Edit Form -->
-                            <form action="" method="post" class="editForm">
-                                <input type="hidden" name="index" value="<?php echo $index; ?>">
-                                <input type="text" name="newName" value="<?php echo htmlspecialchars($transaction['expenseName']); ?>" class="inputEdit">
-                                <input type="number" name="newAmount" value="<?php echo htmlspecialchars($transaction['expenseAmount']); ?>" class="inputEdit">
-                                <select name="newType" class="inputSelectEdit">
-                                    <option value="expense" <?php if ($transaction['expenseType'] == 'expense') echo 'selected'; ?>>Expense</option>
-                                    <option value="credit" <?php if ($transaction['expenseType'] == 'credit') echo 'selected'; ?>>Credit</option>
-                                </select>
-                                <button type="submit" name="editTransaction" class="btnSecondary">Save</button>
-                            </form>
+            // Handle form submission for adding transactions
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const formData = new FormData(form);
+                formData.append('addTransaction', true);
 
-                            <!-- Delete Form -->
-                            <form action="" method="post" class="deleteForm">
-                                <input type="hidden" name="index" value="<?php echo $index; ?>">
-                                <button type="submit" name="deleteTransaction" class="btnDanger">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="4">No transactions found.</td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-
-    <!-- Reset Transactions Button -->
-    <form action="" method="post">
-        <button name="resetTransactions" type="submit" class="btnReset">Reset Transactions</button>
-    </form>
-</div>
-
-
+                fetch('../views/insertDbData.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(() => {
+                    form.reset(); 
+                    // Optionally, refresh the transaction list here
+                    location.reload();
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    </script>
 </body>
 </html>

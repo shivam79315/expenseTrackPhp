@@ -97,8 +97,6 @@ body {
     display: inline-block;
 }
 
-
-
 /* Summary Box Styling */
 .summaryBox {
     margin-top: 20px;
@@ -132,17 +130,18 @@ body {
 
 .transactionTable th, .transactionTable td {
     padding: 15px;
-    text-align: left;
     border-bottom: 1px solid #ddd;
+    text-align: center; 
+    vertical-align: middle; 
 }
 
+th, td {
+    text-align: center; 
+    vertical-align: middle; 
+}
 .actions {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    position: relative;
+    display: block;
 }
-
 /* Edit/Delete Form */
 .inputEdit, .inputSelectEdit {
     width: 80px;
@@ -200,6 +199,11 @@ body {
     border-radius: 5px;
     cursor: pointer;
 }
+
+.btnReset:hover {
+    background-color: #e68a00;
+}
+
 
 .btnReset:hover {
     background-color: #e68a00;
